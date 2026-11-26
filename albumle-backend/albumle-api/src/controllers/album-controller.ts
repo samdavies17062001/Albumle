@@ -1,28 +1,25 @@
-import axios from "axios";
 import type { Request, Response } from "express";
+import AlbumControllerHelper from "@/controllers/helpers/album-controller-helper.js";
+import { randint } from "@/utils/randint.js";
+import type { Album } from "@/types/albumle/album.js";
 
 class AlbumController {
-  private static get baseUrl() {
-    return `${process.env.LISTEN_BRAINZ_API_BASE_URL}/stats/sitewide`;
-  }
+  public static async getDailyAlbum(_req: Request, res: Response) {
+    const popularReleaseGroups = await AlbumControllerHelper.getPopularReleaseGroups();
+    const index = randint(popularReleaseGroups.length);
+    const releaseGroup = popularReleaseGroups.at(index);
 
-  public static async dailyAlbum(_req: Request, res: Response) {
-    try {
-      const response = await axios.get(
-        `${AlbumController.baseUrl}/release-groups`,
-        {
-          params: {
-            range: "all_time",
-            count: 250,
-            offset: 0,
-          },
-        },
-      );
-      res.json(response.data.payload.release_groups);
-    } catch (error) {
-      console.error(error);
-      res.status(502).json({ error: "Failed to fetch release groups" });
+    if (!releaseGroup) {
+      return res.status(500).send({ error: "No release groups available" });
     }
+    const album: Album = {
+      artist_name: releaseGroup.artist_name,
+      album_name: releaseGroup.release_group_name,
+      caa_id: releaseGroup.caa_id,
+      caa_release_mbid: releaseGroup.caa_release_mbid,
+    };
+
+    res.json(album);
   }
 }
 

@@ -1,5 +1,5 @@
 export type ReleaseGroup = {
-  artist_mdbids: [string];
+  artist_mdbids: string[];
   artist_name: string;
   caa_id: number;
   caa_release_mbid: string;
